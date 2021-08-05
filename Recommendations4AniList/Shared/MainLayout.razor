@@ -1,0 +1,44 @@
+﻿@inherits LayoutComponentBase
+
+<CascadingValue Value="this">
+    <div class="page">
+        <div class="sidebar">
+            <NavMenu Title="@Title" IsBackButtonVisible="@IsBackButtonVisible" />
+        </div>
+
+        <partial name="Pages/_CookieConsentPartial.cshtml" />
+        <div class="main">
+            <div class="top-row px-4">
+                <a href="https://github.com/thepbone/" target="_blank">About</a>
+            </div>
+
+            <div class="content px-4">
+                @Body
+            </div>
+        </div>
+    </div>
+</CascadingValue>
+
+@code {
+    private string? _title;
+    public string Title
+    {
+        get => _title ?? string.Empty;
+        set
+        {
+            _title = value;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+    
+    private bool? _isBackButtonVisible;
+    public bool IsBackButtonVisible
+    {
+        get => _isBackButtonVisible ?? false;
+        set
+        {
+            _isBackButtonVisible = value;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+}

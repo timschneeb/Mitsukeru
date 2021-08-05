@@ -1,0 +1,49 @@
+﻿@using Recommendations4AniList.Data.Model
+@inject IJSRuntime _js
+
+<div class="mb-4">
+    <div class="card">
+        <a class="row no-gutter-x hidden-link fade-link" href="@Item.Url()" target="_blank">
+            <div class="col-3 h-100">
+                <img class="card-img" src="@Item.ThumbnailUrl"/>
+            </div>
+            <div class="col-8">
+                <div class="card-body h-100">
+                    <div class="d-flex flex-column h-100">
+                        <h5 class="card-title">@Item.Title</h5>
+                        <div>
+                            @foreach (var genre in Item.Genres)
+                            {
+                                <span class="badge bg-secondary me-1">@genre</span>
+                            }
+                        </div>
+                        <div class="mt-auto">
+                            <span class="h-100 float-start d-flex justify-content-center align-content-center align-items-center">
+                                <small class="text-muted">
+                                    @if (@Item.AverageScore >= 0)
+                                    {
+                                        <span>Score&nbsp;</span>
+                                        @(Item.AverageScore.ToString())
+                                        <span>/100</span>
+                                    }
+                                </small>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public MediaItem Item { get; set; }
+
+    private async void OpenExternally()
+    {
+        await _js.InvokeVoidAsync("eval", $"let _discard_ = open(`{Item.Url()}`, `_blank`)");
+    }
+    
+}

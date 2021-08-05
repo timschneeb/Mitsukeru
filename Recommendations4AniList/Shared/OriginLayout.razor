@@ -1,0 +1,16 @@
+﻿@using Recommendations4AniList.Data.Model
+<div class="pt-2">
+    <div class="">
+        @foreach (var item in Items)
+        {
+            <OriginCard Item="@item" />
+        }
+    </div>
+</div>
+
+@code
+{
+    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
+    [Parameter] public MediaItem[] Items { get; set; }
+
+}

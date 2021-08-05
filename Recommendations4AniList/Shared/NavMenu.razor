@@ -1,0 +1,66 @@
+﻿@inject NavigationManager _navigationMgr
+
+<div class="top-row ps-3 pe-3 navbar navbar-dark">
+
+    <a class="navbar-brand pointer" @onclick="@GoToHome">
+        @if (@IsBackButtonVisible)
+        {
+            <span class="fa fa-arrow-left me-3 back-button"></span>
+        }
+        @Title
+    </a>
+    <button class="navbar-toggler" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <ul class="nav flex-column">
+        <li class="nav-item px-3">
+            <NavLinkPreventDefault class="nav-link" href="" @onclick="@GoToHome" Match="NavLinkMatch.All">
+                <span class="oi oi-magnifying-glass" aria-hidden="true"></span> Search
+            </NavLinkPreventDefault>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="privacy">
+                <span class="oi oi-document" aria-hidden="true"></span> Privacy
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="https://github.com/thepbone/Recommendations4AniList" target="_blank">
+                <span class="oi oi-code" aria-hidden="true"></span> Source code
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="https://paypal.me/timschneeberger" target="_blank">
+                <span class="oi oi-bolt" aria-hidden="true"></span> Donate
+            </NavLink>
+        </li>
+    </ul>
+</div>
+
+@code {
+
+    [Parameter] public string Title { set; get; } = string.Empty;
+    [Parameter] public bool IsBackButtonVisible { set; get; }
+    
+    private bool _collapseNavMenu = true;
+
+    private string? NavMenuCssClass => _collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        _collapseNavMenu = !_collapseNavMenu;
+    }
+
+    private void GoToHome()
+    {
+        _navigationMgr.NavigateTo("/", forceLoad: RelativeUri() == string.Empty || RelativeUri().StartsWith('#'));
+    }
+
+    private string RelativeUri()
+    {
+        return _navigationMgr.ToBaseRelativePath(_navigationMgr.Uri);
+    }
+
+}

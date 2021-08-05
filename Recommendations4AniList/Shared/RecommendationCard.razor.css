@@ -1,0 +1,28 @@
+﻿@media (min-width: 576px) {
+    .grid-sizer { width: 100%; }
+}
+
+@media (min-width: 768px) {
+    .grid-sizer { width: 50%; }
+}
+
+@media (min-width: 992px) {
+    .grid-sizer { width: 50%; }
+}
+
+@media (min-width: 1200px) {
+    .grid-sizer { width: 50%; }
+}
+
+@media (min-width: 1700px) {
+    .grid-sizer { width: 33.333%; }
+}
+
+.crop-text-2 {
+    -webkit-line-clamp: 2;
+    overflow : hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    white-space: unset;
+}

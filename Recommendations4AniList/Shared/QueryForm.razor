@@ -1,0 +1,179 @@
+﻿@using Recommendations4AniList.Data.Model
+@using Recommendations4AniList.GraphQl
+
+<div class="jumbotron mt-4 row d-flex justify-content-center">
+    <div class="col-md-7 col-xl-6">
+        <p class="text-center">
+            Enter your AniList username to collect all recommendations made by other users for anime or manga saved in your personal list.
+        </p>
+
+        <EditForm Model="@_queryModel" OnValidSubmit="@(() => OnSubmit.InvokeAsync(_queryModel))">
+            <DataAnnotationsValidator/>
+            <ValidationSummary/>
+
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon1">Username</span>
+                <input type="text" data-val="true" class="form-control" data-val-required="The Name field is required."
+                       aria-label="AniList username" aria-describedby="basic-addon1"
+                       @bind-value="_queryModel.UserName">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+
+            <select class="form-select mb-3" aria-label=".form-select" @bind="_queryModel.MediaType">
+                <option value="@MediaType.Anime">Anime</option>
+                <option value="@MediaType.Manga" selected>Manga</option>
+            </select>
+
+            <p class="text-center">
+                <small class="text-muted">
+                    Please make sure your AniList profile is set to public.
+                </small>
+            </p>
+
+            <div class="accordion" id="optionsAccordionHost">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headerAdvanced">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAdvanced" aria-expanded="true" aria-controls="collapseAdvanced">
+                            Advanced options
+                        </button>
+                    </h2>
+                    <div id="collapseAdvanced" class="accordion-collapse collapse in show" aria-labelledby="headerAdvanced" data-bs-parent="#optionsAccordionHost">
+                        <div class="accordion-body">
+                            <fieldset class="row mb-3">
+                                <legend class="col-form-label col-sm-5 pt-0">Scan these parts of your library:</legend>
+                                <div class="col-sm-7">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="true" @bind="_queryModel.LibraryIncludePlanned" id="inclStatus0"/>
+                                        <label class="form-check-label" for="inclStatus0">
+                                            Planned
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="true" @bind="_queryModel.LibraryIncludeCurrent" id="inclStatus1"/>
+                                        <label class="form-check-label" for="inclStatus1">
+                                            Current
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="true" @bind="_queryModel.LibraryIncludeCompleted" id="inclStatus2"/>
+                                        <label class="form-check-label" for="inclStatus2">
+                                            Completed
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="true" @bind="_queryModel.LibraryIncludePaused" id="inclStatus3"/>
+                                        <label class="form-check-label" for="inclStatus3">
+                                            Paused
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="true" @bind="_queryModel.LibraryIncludeDropped" id="inclStatus4"/>
+                                        <label class="form-check-label" for="inclStatus4">
+                                            Dropped
+                                        </label>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <fieldset class="row mb-3">
+                                <legend class="col-form-label col-sm-5">Results per page:</legend>
+                                <div class="col-sm-7">
+                                    <select class="form-select form-select" aria-label=".form-select" @bind="_queryModel.ResultsPerPage">
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="75">75</option>
+                                        <option value="100" selected>100</option>
+                                        <option value="200">200</option>
+                                        <option value="300">300</option>
+                                    </select>
+                                </div>
+                            </fieldset>
+                            <fieldset class="row mb-3">
+                                <legend class="col-form-label col-sm-5">Sort by:</legend>
+                                <div class="col-sm-7">
+                                    <select class="form-select" aria-label=".form-select" @bind="_queryModel.SortBy">
+                                        <option value="@SortingMode.RelevanceDesc" selected>Relevance (Matches)</option>
+                                        <option value="@SortingMode.AlphabeticalAsc">Alphabetical A-Z ↗</option>
+                                        <option value="@SortingMode.AlphabeticalDesc">Alphabetical Z-A ↘</option>
+                                        <option value="@SortingMode.PublicRatingsDesc">Public Ratings</option>
+                                    </select>
+                                </div>
+                            </fieldset>
+                            
+                            <fieldset class="row mb-3">
+                               <legend class="col-form-label col-sm-5">Filter for genres:</legend>
+                               <div class="col-sm-7">
+                                   <div class="input-group">
+                                       <input type="text" class="form-control" @bind="_queryModel.FilterTags" placeholder="Action, Drama, ...">
+                                       <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Insert</button>
+                                       <ul class="dropdown-menu dropdown-menu-end">
+                                           @foreach (var genre in _genres)
+                                           {
+                                               var key = genre;
+                                               <li><a class="dropdown-item" @onclick="@(() => InsertFilterTag(key))" href="">@genre</a></li>
+                                           }
+                                       </ul>
+                                   </div>
+                               </div>
+                           </fieldset>
+                            
+                            <fieldset class="row mb-3">
+                                <legend class="col-form-label col-sm-5">Exclude genres:</legend>
+                                <div class="col-sm-7">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" @bind="_queryModel.ExcludedTags" placeholder="Sci-Fi, Sports, ...">
+                                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Insert</button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            @foreach (var genre in _genres)
+                                            {
+                                                var key = genre;
+                                                <li><a class="dropdown-item" @onclick="@(() => InsertExcludedTag(key))" href="">@genre</a></li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback<QueryModel> OnSubmit { get; set; }
+    
+    // Defaults
+    private readonly QueryModel _queryModel = new()
+    {
+        LibraryIncludePlanned = true,
+        LibraryIncludeCurrent = true,
+        LibraryIncludeCompleted = true,
+        MediaType = MediaType.Manga
+    };
+
+    private readonly string[] _genres =
+    {
+        "Action", "Adventure", "Comedy", "Drama", "Ecchi", "Fantasy", "Horror",
+        "Mahou Shoujo", "Mecha", "Music", "Mystery", "Psychological", "Romance",
+        "Sci-Fi", "Slice of Life", "Sports", "Supernatural", "Thriller"
+    };
+
+    private void InsertExcludedTag(string tag)
+    {
+        if (_queryModel.ExcludedTags != string.Empty)
+        {
+            _queryModel.ExcludedTags += ",";
+        }
+        _queryModel.ExcludedTags += tag;
+    }
+    
+    private void InsertFilterTag(string tag)
+    {
+        if (_queryModel.FilterTags != string.Empty)
+        {
+            _queryModel.FilterTags += ",";
+        }
+        _queryModel.FilterTags += tag;
+    }
+}

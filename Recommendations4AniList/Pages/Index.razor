@@ -1,0 +1,361 @@
+﻿@page "/"
+@implements IDisposable
+@using Recommendations4AniList.Data
+@using Recommendations4AniList.GraphQl
+@using GraphQL.Client.Http
+@using Recommendations4AniList.Data.Model
+@using MediaList = Recommendations4AniList.Data.MediaList
+@using System.Reflection.Metadata.Ecma335
+@inject Blazored.SessionStorage.ISessionStorageService _sessionStorage
+@inject IJSRuntime _js;
+@inject NavigationManager _navigationManager;
+
+@if (PageState == PageStates.Input)
+{
+    <QueryForm OnSubmit="@DoSearch"/>
+}
+@if (PageState == PageStates.Loading)
+{
+    <div class="text-center mb-3">
+        @_progressText
+    </div>
+    <div class="progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="@_progressValue.ToString()" aria-valuemin="0" aria-valuemax="100" style="width: @_progressValue.ToString()%"></div>
+    </div>
+}
+@if (PageState == PageStates.Results)
+{
+    <ResultLayout Items="@_recommendationItems" ItemsPerPage="@ItemsPerPage"/>
+}
+@if (PageState == PageStates.Error)
+{ 
+    <h4 class="text-center">An error occurred</h4>
+    <p>@((MarkupString)_errorText)</p>
+    <div>
+        <button class="btn btn-outline-secondary" @onclick="StartOver" type="button">Back</button>
+    </div>
+}
+
+@code
+{
+    enum PageStates
+    {
+        Input,
+        Loading,
+        Results,
+        Error
+    }
+
+    [CascadingParameter]
+    public MainLayout Layout { get; set; }
+
+    private int ItemsPerPage { get; set; } = 100;
+        
+    private const string Title = "Recommendations for AniList";
+    
+    private PageStates _pageState = PageStates.Input;
+    private PageStates PageState
+    {
+        get => _pageState;
+        set
+        {
+            _pageState = value;
+            switch (_pageState)
+            {
+                case PageStates.Error:
+                case PageStates.Results:
+                    Layout.IsBackButtonVisible = true;
+                    
+                    break;
+                default:
+                    Layout.IsBackButtonVisible = false;
+                    break;
+            }
+            StateHasChanged();
+        }
+    }
+
+    private int _progressValue = 0;
+    private string _progressText = "";
+    private string _errorText = "";
+
+    private RecommendationItem[] _recommendationItems = new RecommendationItem[0];
+
+    protected override Task OnInitializedAsync()
+    {
+        _navigationManager.LocationChanged += OnLocationChanged;
+        Layout.Title = Title;
+        return base.OnInitializedAsync();
+    }
+
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        var uri = _navigationManager.ToBaseRelativePath(e.Location);
+        if (uri == string.Empty)
+        {
+            StartOver();
+        }
+        else if (uri.StartsWith("#results"))
+        {
+            if(PageState is PageStates.Input)
+            {
+                if (!await LoadResultsFromCacheAsync())
+                {
+                    // No cached data available
+                    _navigationManager.NavigateTo("/");
+                    StartOver();
+                }
+            }
+
+        }
+    }
+    
+    void IDisposable.Dispose()
+    {
+        // Unsubscribe from the event when our component is disposed
+        _navigationManager.LocationChanged -= OnLocationChanged;
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var hash = await _js.InvokeAsync<string>("getUrlHash");
+        if (hash == "#results" && firstRender)
+        {
+            // Page has been reloaded; try to restore data from cache
+            if (!await LoadResultsFromCacheAsync())
+            {
+                // No cached data available
+                _navigationManager.NavigateTo("/");
+                return;
+            }
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+    
+    void StartOver()
+    {
+        Layout.Title = Title;
+        PageState = PageStates.Input;
+        StateHasChanged();
+    }
+    
+    async void DoSearch(QueryModel queryModel)
+    {
+        ItemsPerPage = queryModel.ResultsPerPage;
+        PageState = PageStates.Loading;
+        _progressValue = 1;
+        _progressText = "Retrieving content from AniList...";
+        StateHasChanged();
+
+        MediaType mediaType = queryModel.MediaType;
+        AniListResponse[] query;
+        
+        try
+        {
+            query = await AniListClient.ExecuteQuery(queryModel.UserName, mediaType,
+                (currentPage, lastPage) =>
+                {
+                    _progressValue = (int) ((float) currentPage / lastPage * 100f);
+                    _progressText = $"Retrieving content from AniList... ({currentPage.ToString()}/{lastPage.ToString()})";
+                    StateHasChanged();
+                });
+        }
+        catch (GraphQlException ex)
+        {
+            _errorText = "GraphQl API error<p/>";
+
+            foreach (var error in ex.Errors)
+            {
+                _errorText += $"<code>{error.Message}</code><p/>";
+            }
+            PageState = PageStates.Error;
+            StateHasChanged();
+            return;
+        }
+        catch (GraphQLHttpRequestException ex)
+        {
+            _errorText = $"This user's list is inaccessible. AniList returned an internal server error:<br/><code>{ex.Content}</code>";
+            PageState = PageStates.Error;
+            StateHasChanged();
+            return;
+        }
+
+        if (query.Length < 1)
+        {
+            _errorText = "No matches found. Either the list of the specified user is inaccessible or there are currently no recommendations for you available.";
+            PageState = PageStates.Error;
+            StateHasChanged();
+            return;
+        }
+        
+        _progressText = $"Processing list...";
+        StateHasChanged();
+
+        var titles = new Dictionary<long /* RecommendationId */, Tuple<MediaItem /* Recommendation */, List<MediaItem> /* Origins */>>();
+        var library = new List<long /* MediaId*/>();
+
+        foreach (var response in query)
+        {
+            foreach (var mediaListPart in response?.Page.MediaList ?? new MediaList[0])
+            {
+                var media = mediaListPart.Media;
+                if (media == null)
+                {
+                    continue;
+                }
+
+                library.Add(media.Id);
+
+                if(!queryModel.GetStatuses().Contains(mediaListPart.Status))
+                {
+                    // Do not use title as basis for recommendation if the status doesn't matches
+                    continue;
+                }
+                
+                if ((media.Recommendations?.Nodes?.Length ?? 0) <= 0)
+                {
+                    // Empty nodes
+                    continue;
+                }
+                
+                foreach (var node in media?.Recommendations?.Nodes ?? new Node[0])
+                {
+                    if (node?.MediaRecommendation == null)
+                    {
+                        continue;
+                    }
+
+                    // Check for excluded tags
+                    var excluded = false;
+                    foreach (var genre in queryModel.GetExcludedTags())
+                    {
+                        if (node.MediaRecommendation.Genres.Contains(genre))
+                        {
+                            excluded = true;
+                        }
+                    }
+                    if (excluded)
+                    {
+                        continue;
+                    }
+                    
+                    // Check for requested tags
+                    var notMatched = false;
+                    foreach (var genre in queryModel.GetFilterTags())
+                    {
+                        if (!node.MediaRecommendation.Genres.Contains(genre))
+                        {
+                            notMatched = true;
+                        }
+                    }
+                    if (notMatched)
+                    {
+                        continue;
+                    }
+                    
+                    // Add each recommendation id of current title
+                    var mediaRecommendationId = node.MediaRecommendation.Id;
+                    if (!titles.ContainsKey(mediaRecommendationId))
+                    {
+                        // Supplement the recommendation as an MediaItem if not yet added
+                        titles[mediaRecommendationId] =
+                            new Tuple<MediaItem, List<MediaItem>>(new MediaItem(node.MediaRecommendation, mediaType), new List<MediaItem>());
+                    }
+                    // Append the origin to the (existing) recommendation
+                    titles[mediaRecommendationId].Item2.Add(new MediaItem(media, mediaType));
+                }
+            }
+        }
+        
+        // Remove titles that are already in the library from the recommendations
+        library.ForEach(x => titles.Remove(x));
+
+        // Translate dictionary into RecommendationItem[] 
+        var recommendations = new RecommendationItem[titles.Values.Count()];
+        int i = 0;
+        foreach (var (recommend, originList) in titles.Values)
+        {
+            if (originList.Count < 1)
+            {
+                continue;
+            }
+
+            recommendations[i] = new RecommendationItem
+            {
+                RecommendationMedia = recommend,
+                RecommendationOrigin = new MediaItem[originList.Count]
+            };
+            for (var j = 0; j < originList.Count; j++)
+            {
+                recommendations[i].RecommendationOrigin[j] = originList[j];
+            }
+            i++;
+        }
+        
+        // Sort results
+        switch (queryModel.SortBy)
+        {
+            case SortingMode.AlphabeticalAsc:
+                Array.Sort(recommendations, (x, y) => String.Compare(x.RecommendationMedia.Title, y.RecommendationMedia.Title, StringComparison.InvariantCulture));
+                break;
+            case SortingMode.AlphabeticalDesc:
+                Array.Sort(recommendations, (x, y) => String.Compare(y.RecommendationMedia.Title, x.RecommendationMedia.Title, StringComparison.InvariantCulture));
+                break;
+            case SortingMode.RelevanceDesc:
+                Array.Sort(recommendations, (x, y) => y.RecommendationOrigin.Length.CompareTo(x.RecommendationOrigin.Length));
+                break;
+            case SortingMode.PublicRatingsDesc:
+                Array.Sort(recommendations, (x, y) => y.RecommendationMedia.AverageScore.CompareTo(x.RecommendationMedia.AverageScore));
+                break;
+        }
+        
+        // Cache results
+        var task = _sessionStorage.SetItemAsync("results", recommendations);
+        
+        _navigationManager.NavigateTo("#results");
+        LoadResults(recommendations);
+        await task;
+    }
+
+    void LoadResults(RecommendationItem[] recommendations)
+    {
+        if (recommendations.Length < 1)
+        {
+            _errorText = "No matches found. There are currently no recommendations available. Please check the filter settings and try again.";
+            PageState = PageStates.Error;
+            StateHasChanged();
+            return;
+        }
+
+        _recommendationItems = recommendations;
+        PageState = PageStates.Results;
+        _progressText = $"Done";
+        
+        Layout.Title = "Your Recommendations";
+        StateHasChanged();
+    }
+
+    async Task<bool> LoadResultsFromCacheAsync()
+    {
+        if (!await _sessionStorage.ContainKeyAsync("results"))
+            return false;
+        
+        PageState = PageStates.Loading;
+        _progressValue = 100;
+        _progressText = "Restoring list from cache...";
+        StateHasChanged();
+
+        await Task.Delay(100);
+
+        var results = await _sessionStorage.GetItemAsync<RecommendationItem[]>("results");
+
+        if (results == null || results.Length < 1)
+        {
+            return false;
+        }
+        LoadResults(results);
+
+        return true;
+    }
+}
+

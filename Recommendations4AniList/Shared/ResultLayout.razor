@@ -1,0 +1,120 @@
+﻿@using Recommendations4AniList.Data.Model
+@inject IJSRuntime _js
+
+<div class="pt-2">
+    <div class="row grid" data-masonry='{"percentPosition": true }'>
+        @for (var i = _paginateCurrentPage * ItemsPerPage; i < (_paginateCurrentPage * ItemsPerPage)
+                                                           + Math.Min(ItemsPerPage, Items.Length - (_paginateCurrentPage * ItemsPerPage)); i++)
+        {
+            <RecommendationCard Item="@Items[i]" OnOriginRequest="@OnOriginRequest"/>
+        }
+
+        <nav>
+            <ul class="pagination flex-wrap justify-content-center">
+                @if (_paginatePrevDisabled)
+                {
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#results" tabindex="-1" aria-disabled="true">Previous</a>
+                    </li>
+                }
+                @if (!_paginatePrevDisabled)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="#results" @onclick="PrevPage">Previous</a>
+                    </li>
+                }
+                @for (var i = 0; i < PageCount; i++)
+                {
+                    var page = i;
+                    <li class="page-item @((i == _paginateCurrentPage ? "active" : ""))">
+                        <a class="page-link" href="#results"
+                           @onclick="() => GoToPage(page)">@((i + 1).ToString())</a>
+                    </li>
+                }
+                @if (_paginateNextDisabled)
+                {
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#results" tabindex="-1" aria-disabled="true">Next</a>
+                    </li>
+                }
+                @if (!_paginateNextDisabled)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="#results" @onclick="NextPage">Next</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+@code {
+    [Parameter] public RecommendationItem[] Items { get; set; }
+    [Parameter] public int ItemsPerPage { get; set; } = 100;
+    [CascadingParameter] public IModalService Modal { get; set; }
+        
+    private int PageCount => (int)Math.Ceiling(Items.Length / (float)ItemsPerPage);
+    private bool _paginatePrevDisabled = true;
+    private bool _paginateNextDisabled = true;
+    // Null-indexed
+    private int _paginateCurrentPage = 0;
+
+    protected override void OnParametersSet()
+    {
+        UpdatePaginationStates();
+        StateHasChanged();
+        base.OnParametersSet();
+    }
+
+    private async void OnOriginRequest(RecommendationItem item)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add("Items", item.RecommendationOrigin);
+        var modal = Modal.Show<OriginLayout>("Based on these titles in your library", 
+            parameters, new ModalOptions()
+            {
+                ContentScrollable = true, 
+                FocusFirstElement = false
+            });
+        
+        await _js.InvokeVoidAsync("disableSmoothScroll");
+        await modal.Result;
+        await _js.InvokeVoidAsync("enableSmoothScroll");
+    }
+
+    private void UpdatePaginationStates()
+    {
+        _paginatePrevDisabled = _paginateCurrentPage <= 0;
+        _paginateNextDisabled = _paginateCurrentPage >= PageCount - 1;
+    }
+    
+    private void GoToPage(int page)
+    {
+        if (page < 0)
+        {
+            _paginateCurrentPage = 0;
+        }
+        else if (page > PageCount)
+        {
+            _paginateCurrentPage = PageCount;
+        }
+        else
+        {
+            _paginateCurrentPage = page;
+        }
+        
+        UpdatePaginationStates();
+        StateHasChanged();
+    }
+
+    private void NextPage()
+    {
+        GoToPage(_paginateCurrentPage + 1);
+    }
+    
+    private void PrevPage()
+    {
+        GoToPage(_paginateCurrentPage - 1);
+    }
+}

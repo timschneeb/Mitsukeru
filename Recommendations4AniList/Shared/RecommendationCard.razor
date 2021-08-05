@@ -1,0 +1,74 @@
+﻿@using Recommendations4AniList.Data.Model
+@using System.Text.RegularExpressions
+@inject IJSRuntime _js
+
+<div class="mb-4 grid-sizer">
+    <div class="card">
+        <a class="row hidden-link fade-link" href="@Item.RecommendationMedia.Url()" target="_blank">
+            <div class="col-md-4 col-sm-4 col-4 h-100">
+                <img class="card-img" src="@Item.RecommendationMedia.ThumbnailUrl"/>
+            </div>
+            <div class="col-md-8 col-sm-8 col-8">
+                <div class="card-body h-100">
+                    <div class="d-flex flex-column h-100">
+                        <h5 class="card-title">@Item.RecommendationMedia.Title</h5>
+                        <div>
+                            @foreach (var genre in Item.RecommendationMedia.Genres)
+                            {
+                                <span class="badge bg-secondary me-1">@genre</span>
+                            }
+                        </div>
+                        <div class="pt-1 pb-1 small text-truncate crop-text-2" @onclick:stopPropagation="true" @onclick:preventDefault="true"
+                             data-bs-toggle="tooltip" data-container="body" data-bs-html="true" title="@Item.RecommendationMedia.Description.Replace("<br>", string.Empty)">
+                            @Regex.Replace(Item.RecommendationMedia.Description, "<.*?>", string.Empty)
+                        </div>
+                        <div class="mt-auto">
+                            <span class="h-100 float-start d-flex justify-content-center align-content-center align-items-center">
+                                <small class="text-muted">
+                                    @if (@Item.RecommendationMedia.AverageScore >= 0)
+                                    {
+                                        <span>Score&nbsp;</span>
+                                        @(Item.RecommendationMedia.AverageScore.ToString())
+                                        <span>/100</span>
+                                    }
+                                </small>
+                            </span>
+                            <span class="float-end" @onclick:stopPropagation="true" @onclick:preventDefault="true">
+                                <button type="button" @onclick="@(() => OnOriginRequest?.Invoke(Item))" class="btn btn-outline-secondary btn-sm">
+                                    @Item.RecommendationOrigin.Length.ToString()
+                                    @if (Item.RecommendationOrigin.Length == 1)
+                                    {
+                                        <span>&nbsp;match</span>
+                                    }
+                                    @if (Item.RecommendationOrigin.Length != 1)
+                                    {
+                                        <span>&nbsp;matches</span>
+                                    }
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public RecommendationItem Item { get; set; }
+
+    [Parameter] public Action<RecommendationItem>? OnOriginRequest { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await _js.InvokeVoidAsync("initTooltips");
+        await base.OnAfterRenderAsync(firstRender);
+    }
+    
+    private async void OpenExternally()
+    {
+        await _js.InvokeVoidAsync("eval", $"let _discard_ = open(`{Item.RecommendationMedia.Url()}`, `_blank`)");
+    }
+}
