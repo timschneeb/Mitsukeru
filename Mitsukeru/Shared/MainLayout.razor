@@ -3,10 +3,11 @@
 <CascadingValue Value="this">
     <div class="page">
         <div class="sidebar">
-            <NavMenu Title="@Title" IsBackButtonVisible="@IsBackButtonVisible" />
+            <CascadingValue Value="@StartOverCallback">
+                <NavMenu Title="@Title" IsBackButtonVisible="@IsBackButtonVisible"/>
+            </CascadingValue>
         </div>
 
-        <partial name="Pages/_CookieConsentPartial.cshtml" />
         <div class="main">
             <div class="top-row px-4">
                 <a href="https://github.com/thepbone/" target="_blank">About</a>
@@ -20,6 +21,9 @@
 </CascadingValue>
 
 @code {
+
+    public Action? StartOverCallback { set; get; }
+    
     private string? _title;
     public string Title
     {

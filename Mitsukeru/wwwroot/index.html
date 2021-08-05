@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Mitsukeru for AniList</title>
+    <base href="/"/>
+    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+    <link href="_content/Blazored.Modal/blazored-modal.css" rel="stylesheet" />
+    <link href="css/site.css" rel="stylesheet"/>
+    <link href="Mitsukeru.styles.css" rel="stylesheet"/>
+</head>
+<body>
+    <div id="app">
+        <div class="d-flex flex-column min-vh-100 justify-content-center align-items-center">
+            <h3>Mitsukeru is loading...</h3>
+            <p class="text-center ms-1 me-1">Please wait a few seconds while the WebAssembly app is compiling</p>
+            <div class="spinner-border text-secondary" role="status"></div>
+        </div>
+
+    </div>
+    
+    <div id="blazor-error-ui">
+        An unhandled error has occurred. This application may no longer respond until reloaded.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    
+    <script>
+        window.initTooltips = function(){
+            $('[data-bs-toggle="tooltip"]').tooltip();
+        }
+        window.getUrlHash = function(){
+            return window.location.hash;
+        }
+        window.disableSmoothScroll = function (){
+            document.documentElement.style.scrollBehavior = 'auto';
+        }
+        window.enableSmoothScroll = function (){
+            document.documentElement.style.scrollBehavior = 'smooth';
+        }
+    </script>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_content/Blazored.Modal/blazored.modal.js"></script>
+</body>
+</html>

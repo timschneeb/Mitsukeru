@@ -43,6 +43,7 @@
 
     [Parameter] public string Title { set; get; } = string.Empty;
     [Parameter] public bool IsBackButtonVisible { set; get; }
+    [CascadingParameter] public Action? StartOverCallback { set; get; }
     
     private bool _collapseNavMenu = true;
 
@@ -55,7 +56,14 @@
 
     private void GoToHome()
     {
-        _navigationMgr.NavigateTo("/", forceLoad: RelativeUri() == string.Empty || RelativeUri().StartsWith('#'));
+        if (RelativeUri() == string.Empty || RelativeUri().StartsWith('#'))
+        {
+            StartOverCallback?.Invoke();
+        }
+        else
+        {
+            _navigationMgr.NavigateTo("/");
+        }
     }
 
     private string RelativeUri()

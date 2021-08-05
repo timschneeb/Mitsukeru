@@ -85,6 +85,11 @@
     {
         _navigationManager.LocationChanged += OnLocationChanged;
         Layout.Title = Title;
+        Layout.StartOverCallback = () =>
+        {
+            _navigationManager.NavigateTo("/");
+            StartOver();
+        };
         return base.OnInitializedAsync();
     }
 
@@ -309,15 +314,8 @@
                 break;
         }
         
-        // Cache results if not too big
-        var serializer = new SystemTextJsonSerializer();
-        var data = serializer.Serialize(recommendations);
-        if (Encoding.Unicode.GetByteCount(data) > 4 * 1024 * 1024)
-        {
-            data = string.Empty;
-        }
-        
-        var task = _sessionStorage.SetItemAsStringAsync("results", data);
+        // Cache results
+        var task = _sessionStorage.SetItemAsync("results", recommendations);
         
         _navigationManager.NavigateTo("#results");
         LoadResults(recommendations);

@@ -21,26 +21,6 @@ namespace Mitsukeru.Data.Model
             return $"https://anilist.co/{Type.ToString().ToLower()}/{Id.ToString()}";
         }
         
-        public static bool operator ==(MediaItem m1, MediaItem m2)
-        {
-            if (m1 is null)
-            {
-                return m2 is null;
-            }
-
-            return m1.Id == m2?.Id;
-        }
-        
-        public static bool operator !=(MediaItem m1, MediaItem m2)
-        {
-            if (m1 is null)
-            {
-                return m2 is null;
-            }
-
-            return m1.Id != m2?.Id;
-        }
-
         [JsonConstructor]
         public MediaItem(long id, string title, string[] genres, string description, long averageScore, string thumbnailUrl, MediaType type)
         {
