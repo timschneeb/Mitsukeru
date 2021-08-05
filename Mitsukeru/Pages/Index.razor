@@ -5,6 +5,7 @@
 @using GraphQL.Client.Http
 @using Mitsukeru.Data.Model
 @using MediaList = Mitsukeru.Data.MediaList
+@using System.Text
 @inject Blazored.SessionStorage.ISessionStorageService _sessionStorage
 @inject IJSRuntime _js;
 @inject NavigationManager _navigationManager;
@@ -308,8 +309,15 @@
                 break;
         }
         
-        // Cache results
-        var task = _sessionStorage.SetItemAsync("results", recommendations);
+        // Cache results if not too big
+        var serializer = new SystemTextJsonSerializer();
+        var data = serializer.Serialize(recommendations);
+        if (Encoding.Unicode.GetByteCount(data) > 4 * 1024 * 1024)
+        {
+            data = string.Empty;
+        }
+        
+        var task = _sessionStorage.SetItemAsStringAsync("results", data);
         
         _navigationManager.NavigateTo("#results");
         LoadResults(recommendations);
@@ -338,7 +346,7 @@
     {
         if (!await _sessionStorage.ContainKeyAsync("results"))
             return false;
-        
+
         PageState = PageStates.Loading;
         _progressValue = 100;
         _progressText = "Restoring list from cache...";

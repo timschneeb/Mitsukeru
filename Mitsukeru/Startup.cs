@@ -43,7 +43,7 @@ namespace Mitsukeru
             services.AddServerSideBlazor();
             services.AddSignalR(hubOptions =>
             {
-                hubOptions.MaximumReceiveMessageSize = 10 * 1024 * 1024; // 10MB
+                hubOptions.MaximumReceiveMessageSize = (4 * 1024 * 1024); // 4MB
             });
         }
 
