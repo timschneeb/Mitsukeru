@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Text.Json.Serialization;
-using Recommendations4AniList.GraphQl;
+using Mitsukeru.GraphQl;
 
-namespace Recommendations4AniList.Data.Model
+namespace Mitsukeru.Data.Model
 {
     [Serializable]
     public class MediaItem

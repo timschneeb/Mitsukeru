@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 #endif
 
-namespace Recommendations4AniList.GraphQl
+namespace Mitsukeru.GraphQl
 {
     #region base classes
     public struct FieldMetadata

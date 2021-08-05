@@ -1,7 +1,7 @@
 ﻿using System;
-using Recommendations4AniList.GraphQl;
+using Mitsukeru.GraphQl;
 
-namespace Recommendations4AniList.Data.Model
+namespace Mitsukeru.Data.Model
 {
     [Serializable]
     public class RecommendationItem

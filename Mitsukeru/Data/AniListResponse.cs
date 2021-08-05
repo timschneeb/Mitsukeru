@@ -4,9 +4,9 @@
 //
 //    var aniListResponse = AniListResponse.FromJson(jsonString);
 
-using Recommendations4AniList.GraphQl;
+using Mitsukeru.GraphQl;
 
-namespace Recommendations4AniList.Data
+namespace Mitsukeru.Data
 {
     using System;
     using System.Collections.Generic;

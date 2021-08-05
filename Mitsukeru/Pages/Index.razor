@@ -1,11 +1,10 @@
 ﻿@page "/"
 @implements IDisposable
-@using Recommendations4AniList.Data
-@using Recommendations4AniList.GraphQl
+@using Mitsukeru.Data
+@using Mitsukeru.GraphQl
 @using GraphQL.Client.Http
-@using Recommendations4AniList.Data.Model
-@using MediaList = Recommendations4AniList.Data.MediaList
-@using System.Reflection.Metadata.Ecma335
+@using Mitsukeru.Data.Model
+@using MediaList = Mitsukeru.Data.MediaList
 @inject Blazored.SessionStorage.ISessionStorageService _sessionStorage
 @inject IJSRuntime _js;
 @inject NavigationManager _navigationManager;

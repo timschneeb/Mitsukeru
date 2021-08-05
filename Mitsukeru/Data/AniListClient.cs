@@ -5,11 +5,9 @@ using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
-using ModernHttpClient;
-using Newtonsoft.Json;
-using Recommendations4AniList.GraphQl;
+using Mitsukeru.GraphQl;
 
-namespace Recommendations4AniList.Data
+namespace Mitsukeru.Data
 {
     public static class AniListClient
     {
@@ -20,8 +18,7 @@ namespace Recommendations4AniList.Data
             var uri = new Uri("https://graphql.anilist.co");
             var graphQlOptions = new GraphQLHttpClientOptions
             {
-                EndPoint = uri,
-                HttpMessageHandler = new NativeMessageHandler(),
+                EndPoint = uri
             };
 
             GraphQlHttpClient = new GraphQLHttpClient(graphQlOptions, new NewtonsoftJsonSerializer());

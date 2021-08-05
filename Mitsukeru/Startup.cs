@@ -12,9 +12,9 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Recommendations4AniList.Data;
+using Mitsukeru.Data;
 
-namespace Recommendations4AniList
+namespace Mitsukeru
 {
     public class Startup
     {

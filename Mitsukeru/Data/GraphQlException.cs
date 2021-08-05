@@ -1,7 +1,7 @@
 ﻿using System;
 using GraphQL;
 
-namespace Recommendations4AniList.Data
+namespace Mitsukeru.Data
 {
     public class GraphQlException : Exception
     {

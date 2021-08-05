@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Components;
-using Recommendations4AniList.GraphQl;
+using Mitsukeru.GraphQl;
 
-namespace Recommendations4AniList.Data.Model
+namespace Mitsukeru.Data.Model
 {
     public class QueryModel
     {

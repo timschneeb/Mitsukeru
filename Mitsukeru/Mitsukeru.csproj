@@ -11,7 +11,6 @@
       <PackageReference Include="Blazored.SessionStorage" Version="2.1.0" />
       <PackageReference Include="GraphQL.Client" Version="3.2.4" />
       <PackageReference Include="GraphQL.Client.Serializer.Newtonsoft" Version="3.2.4" />
-      <PackageReference Include="modernhttpclient" Version="2.4.2" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     </ItemGroup>
 

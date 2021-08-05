@@ -1,4 +1,4 @@
-﻿namespace Recommendations4AniList.Data.Model
+﻿namespace Mitsukeru.Data.Model
 {
     public enum SortingMode
     {

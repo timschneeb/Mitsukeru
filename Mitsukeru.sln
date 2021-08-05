@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Recommendations4AniList", "Recommendations4AniList\Recommendations4AniList.csproj", "{2C0BDB4D-ECCB-4F9C-82BE-F054277F596C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mitsukeru", "Mitsukeru\Mitsukeru.csproj", "{2C0BDB4D-ECCB-4F9C-82BE-F054277F596C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
