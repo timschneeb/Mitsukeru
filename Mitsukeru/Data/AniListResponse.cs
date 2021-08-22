@@ -60,6 +60,12 @@ namespace Mitsukeru.Data
         public Node[] Nodes { get; set; }
     }
     
+    public partial class Tag
+    {
+        [JsonProperty("name")]
+        public string Name { get; set; }
+    }
+    
     public partial class Media
     {
         [JsonProperty("id")]
@@ -70,6 +76,9 @@ namespace Mitsukeru.Data
 
         [JsonProperty("genres")]
         public string[] Genres { get; set; }
+        
+        [JsonProperty("tags")]
+        public Tag[] Tags { get; set; }
 
         [JsonProperty("averageScore")]
         public long? AverageScore { get; set; }

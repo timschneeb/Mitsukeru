@@ -100,7 +100,21 @@
                             </fieldset>
                             
                             <fieldset class="row mb-3">
-                               <legend class="col-form-label col-sm-5">Filter for genres:</legend>
+                                <legend class="col-form-label col-sm-5">Minimum recommendation votes:</legend>
+                                <div class="col-sm-7">
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text" id="basic-addon2">At least</span>
+                                        <input type="number" data-val="true" class="form-control"
+                                               aria-label="Minimum recommendation rating" aria-describedby="basic-addon2"
+                                               @bind-value="_queryModel.MinimumRecommendationVotes"
+                                               step="1" pattern="\d+">
+                                        <span class="input-group-text" id="basic-addon3">votes</span>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            
+                            <fieldset class="row mb-3">
+                               <legend class="col-form-label col-sm-5">Filter for genres/tags:</legend>
                                <div class="col-sm-7">
                                    <div class="input-group">
                                        <input type="text" class="form-control" @bind="_queryModel.FilterTags" placeholder="Action, Drama, ...">
@@ -117,7 +131,7 @@
                            </fieldset>
                             
                             <fieldset class="row mb-3">
-                                <legend class="col-form-label col-sm-5">Exclude genres:</legend>
+                                <legend class="col-form-label col-sm-5">Exclude genres/tags:</legend>
                                 <div class="col-sm-7">
                                     <div class="input-group">
                                         <input type="text" class="form-control" @bind="_queryModel.ExcludedTags" placeholder="Sci-Fi, Sports, ...">
@@ -132,6 +146,12 @@
                                     </div>
                                 </div>
                             </fieldset>
+                            
+                            <p class="text-center">
+                                <small class="text-muted">
+                                    <a href="https://anilist.co/forum/thread/4824" target="_blank">What are tags?</a>
+                                </small>
+                            </p>
                         </div>
                     </div>
                 </div>

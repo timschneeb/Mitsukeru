@@ -12,7 +12,9 @@
 
 @if (PageState == PageStates.Input)
 {
-    <QueryForm OnSubmit="@DoSearch"/>
+    <div class="mb-3">
+        <QueryForm OnSubmit="@DoSearch"/>
+    </div>
 }
 @if (PageState == PageStates.Loading)
 {
@@ -230,11 +232,26 @@
                         continue;
                     }
 
+                    if (node.Rating < queryModel.MinimumRecommendationVotes)
+                    {
+                        continue;
+                    }
+                    
+                    // Enumerate tags
+                    var tags = new string[node.MediaRecommendation.Tags.Length];
+                    var tcnt = 0;
+                    foreach(var tag in node.MediaRecommendation.Tags)
+                    {
+                        tags[tcnt] = tag.Name;
+                        tcnt++;
+                    }
+                    
                     // Check for excluded tags
                     var excluded = false;
                     foreach (var genre in queryModel.GetExcludedTags())
                     {
-                        if (node.MediaRecommendation.Genres.Contains(genre))
+                        if (node.MediaRecommendation.Genres.Contains(genre, StringComparer.InvariantCultureIgnoreCase) || 
+                            tags.Contains(genre, StringComparer.InvariantCultureIgnoreCase))
                         {
                             excluded = true;
                         }
@@ -248,7 +265,8 @@
                     var notMatched = false;
                     foreach (var genre in queryModel.GetFilterTags())
                     {
-                        if (!node.MediaRecommendation.Genres.Contains(genre))
+                        if (!node.MediaRecommendation.Genres.Contains(genre, StringComparer.InvariantCultureIgnoreCase) && 
+                            !tags.Contains(genre, StringComparer.InvariantCultureIgnoreCase))
                         {
                             notMatched = true;
                         }

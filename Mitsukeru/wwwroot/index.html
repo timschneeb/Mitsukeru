@@ -15,11 +15,18 @@
     <div id="app">
         <div class="d-flex flex-column min-vh-100 justify-content-center align-items-center">
             <h3>Mitsukeru is loading...</h3>
-            <p class="text-center ms-1 me-1">Please wait a few seconds while the WebAssembly app is compiling</p>
+            <p class="text-center ms-1 me-1">
+                Downloading and compiling WebAssembly application resources.
+                <br/>
+                This may take a few seconds depending on your internet connection quality.
+            </p>
             <div class="spinner-border text-secondary" role="status"></div>
         </div>
-
     </div>
+    
+    <noscript>
+        This site uses both WebAssembly and JavaScript. Please use a compatible and modern browser to view this page.
+    </noscript>
     
     <div id="blazor-error-ui">
         An unhandled error has occurred. This application may no longer respond until reloaded.

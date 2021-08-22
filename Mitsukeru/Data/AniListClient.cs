@@ -74,6 +74,8 @@ namespace Mitsukeru.Data
                                                                     new MediaTitleQueryBuilder()
                                                                         .WithRomaji()
                                                                         .WithEnglish())
+                                                                .WithTags(
+                                                                    new MediaTagQueryBuilder().WithName())
                                                                 .WithGenres()
                                                                 .WithAverageScore()
                                                                 .WithDescription(asHtml: true)

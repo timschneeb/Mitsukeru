@@ -12,6 +12,7 @@ namespace Mitsukeru.Data.Model
         [Required] [Parameter] public MediaType MediaType { set; get; }
 
         [Parameter] public int ResultsPerPage { set; get; } = 100;
+        [Parameter] public int MinimumRecommendationVotes { set; get; }
         [Parameter] public SortingMode SortBy { set; get; } = SortingMode.RelevanceDesc;
         [Parameter] public string ExcludedTags { set; get; } = string.Empty;
         [Parameter] public string FilterTags { set; get; } = string.Empty;
